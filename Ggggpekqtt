@@ -1,0 +1,59 @@
+local KEY_URL = "https://pastebin.com/raw/faLa91E4"
+local EXPIRE_TIME = 24 * 60 * 60 
+local SAVE_FILE = "key_data.txt"
+
+function fetchKeys()
+    local http = game:HttpGet(KEY_URL)
+    return http
+end
+
+function saveKey(key)
+    if writefile then
+        local data = key .. "|" .. os.time()
+        writefile(SAVE_FILE, data)
+    end
+end
+
+function loadKey()
+    if readfile and isfile and isfile(SAVE_FILE) then
+        local data = readfile(SAVE_FILE)
+        local key, time = data:match("(.+)|(.+)")
+        return key, tonumber(time)
+    end
+    return nil, nil
+end
+
+function isExpired(savedTime)
+    return (os.time() - savedTime) > EXPIRE_TIME
+end
+
+function checkKey(inputKey)
+    local data = fetchKeys()
+    for key in string.gmatch(data, "[^\r\n]+") do
+        if key == inputKey then
+            return true
+        end
+    end
+    return false
+end
+
+local userKey = _G.Key
+
+if not userKey then
+    return
+end
+
+local savedKey, savedTime = loadKey()
+if savedKey and savedTime then
+    if savedKey == userKey and not isExpired(savedTime) then
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/Kirito16243/KiritoaAFK/refs/heads/main/Ninja%20Legends'))()
+        return
+    end
+end
+
+if checkKey(userKey) then
+    saveKey(userKey)
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/Kirito16243/KiritoaAFK/refs/heads/main/Ninja%20Legends'))()
+else
+    game.Players.LocalPlayer:Kick("คีย์ไม่ถูกต้องหรือหมดอายุ")
+end
